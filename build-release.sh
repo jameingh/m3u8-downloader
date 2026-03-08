@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 mkdir "Releases"
 
@@ -14,5 +14,5 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build  -o ./Releases/m3u8 m3u8-downloa
 # echo "start build windows/amd64 ..."
 # CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build  -o ./Releases/m3u8-windows-amd64.exe m3u8-downloader.go
 
-echo 'alias m3u8="~/Documents/m3u8-downloader/m3u8"' >> ~/.zshrc && source ~/.zshrc
+echo 'alias m3u8="~/Documents/m3u8-downloader/Releases/m3u8"' >> ~/.zshrc && source ~/.zshrc
 echo "Congratulations,all build success!!!"
