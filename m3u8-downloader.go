@@ -73,6 +73,44 @@ func main() {
 	Run()
 }
 
+// 获取用户 home 目录
+func getHomeDir() string {
+	home := os.Getenv("HOME")
+	if home == "" {
+		home = os.Getenv("USERPROFILE")
+	}
+	return home
+}
+
+// 从 URL 中提取文件名
+func extractFileNameFromURL(urlStr string) string {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return "video"
+	}
+	path := u.Path
+	segments := strings.Split(path, "/")
+	if len(segments) > 0 {
+		lastSegment := segments[len(segments)-1]
+		if lastSegment != "" {
+			name := strings.TrimSuffix(lastSegment, ".m3u8")
+			name = strings.TrimSuffix(name, ".ts")
+			if name != "" {
+				return name
+			}
+		}
+	}
+	return fmt.Sprintf("video_%d", time.Now().Unix())
+}
+
+// 交互式获取输入
+func getInput(prompt string) string {
+	fmt.Print(prompt)
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
+}
+
 func Run() {
 	msgTpl := "[功能]:多线程下载直播流m3u8视屏\n[提醒]:下载失败，请使用 -ht=v2 \n[提醒]:下载失败，m3u8 地址可能存在嵌套\n[提醒]:进度条中途下载失败，可重复执行"
 	fmt.Println(msgTpl)
@@ -80,15 +118,41 @@ func Run() {
 	now := time.Now()
 
 	// 1、解析命令行参数
+	flag.Usage = func() {} // 禁用默认帮助输出
 	flag.Parse()
+
+	// 检查是否提供了 URL 参数，如果没有则进入交互模式
 	m3u8Url := *urlFlag
+	if m3u8Url == "" {
+		m3u8Url = getInput("请输入 m3u8 视频地址：")
+	}
+
+	if m3u8Url == "" {
+		fmt.Println("错误：未提供 m3u8 地址")
+		return
+	}
+
+	// 如果没有指定输出文件名，自动从 URL 提取
+	movieName := *oFlag
+	if movieName == "movie" {
+		movieName = extractFileNameFromURL(m3u8Url)
+	}
+
+	// 默认保存到 ~/Downloads 目录
+	savePath := *spFlag
+	if savePath == "" {
+		homeDir := getHomeDir()
+		savePath = filepath.Join(homeDir, "Downloads")
+		if isExist, _ := pathExists(savePath); !isExist {
+			os.MkdirAll(savePath, os.ModePerm)
+		}
+	}
+
 	maxGoroutines := *nFlag
 	hostType := *htFlag
-	movieName := *oFlag
 	autoClearFlag := *rFlag
 	cookie := *cFlag
 	insecure := *sFlag
-	savePath := *spFlag
 
 	ro.Headers["Referer"] = getHost(m3u8Url, "v2")
 	if insecure != 0 {
