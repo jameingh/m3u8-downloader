@@ -38,7 +38,7 @@ const (
 var (
 	// 命令行参数
 	urlFlag = flag.String("u", "", "m3u8下载地址(http(s)://url/xx/xx/index.m3u8)")
-	nFlag   = flag.Int("n", 24, "num:下载线程数(默认24)")
+	nFlag   = flag.Int("n", 64, "num:下载线程数(默认24)")
 	htFlag  = flag.String("ht", "v1", "hostType:设置getHost的方式(v1: `http(s):// + url.Host + filepath.Dir(url.Path)`; v2: `http(s)://+ u.Host`")
 	oFlag   = flag.String("o", "movie", "movieName:自定义文件名(默认为movie)不带后缀")
 	cFlag   = flag.String("c", "", "cookie:自定义请求cookie")
@@ -132,10 +132,14 @@ func Run() {
 		return
 	}
 
-	// 如果没有指定输出文件名，自动从 URL 提取
 	movieName := *oFlag
 	if movieName == "movie" {
-		movieName = extractFileNameFromURL(m3u8Url)
+		inputName := getInput("请输入文件名（直接回车使用日期时间）：")
+		if inputName == "" {
+			movieName = fmt.Sprintf("video_%s", time.Now().Format("20060102_150405"))
+		} else {
+			movieName = inputName
+		}
 	}
 
 	// 默认保存到 ~/Downloads 目录
