@@ -28,10 +28,10 @@ import (
 
 const (
 	// HEAD_TIMEOUT 请求头超时时间
-	HEAD_TIMEOUT = 5 * time.Second
+	HEAD_TIMEOUT = 30 * time.Second
 	// PROGRESS_WIDTH 进度条长度
 	PROGRESS_WIDTH = 20
-	// TS_NAME_TEMPLATE ts视频片段命名规则
+	// TS_NAME_TEMPLATE ts 视频片段命名规则
 	TS_NAME_TEMPLATE = "%05d.ts"
 )
 
@@ -236,7 +236,7 @@ func getM3u8Key(host, html string) (key string) {
 			if !strings.Contains(line, "URI") {
 				continue
 			}
-			fmt.Println("[debug] line_key:",line)
+			fmt.Println("[debug] line_key:", line)
 			uri_pos := strings.Index(line, "URI")
 			quotation_mark_pos := strings.LastIndex(line, "\"")
 			key_url := strings.Split(line[uri_pos:quotation_mark_pos], "\"")[1]
@@ -251,7 +251,7 @@ func getM3u8Key(host, html string) (key string) {
 			}
 		}
 	}
-	fmt.Println("[debug] m3u8Host:",host,"m3u8Key:",key)
+	fmt.Println("[debug] m3u8Host:", host, "m3u8Key:", key)
 	return
 }
 
